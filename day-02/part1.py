@@ -6,21 +6,19 @@ class Path(Elaboratable):
 		self.i_direction = Signal(16)
 		self.i_distance = Signal(16)
 
-		self.i_incr = Signal()
-
 		self.o_depth = Signal(16)
 		self.o_forward = Signal(16)
 
 	def elaborate(self, platform):
 		m = Module()
 
-		with m.If((self.i_direction == Direction['UP'].value) & self.i_incr):
+		with m.If((self.i_direction == Direction['UP'].value)):
 			m.d.sync += self.o_depth.eq(self.o_depth - self.i_distance)
 
-		with m.If((self.i_direction == Direction['DOWN'].value) & self.i_incr):
+		with m.If((self.i_direction == Direction['DOWN'].value)):
 			m.d.sync += self.o_depth.eq(self.o_depth + self.i_distance)
 
-		with m.If((self.i_direction == Direction['FORWARD'].value) & self.i_incr):
+		with m.If((self.i_direction == Direction['FORWARD'].value)):
 			m.d.sync += self.o_forward.eq(self.o_forward + self.i_distance)
 
 		return m
@@ -34,9 +32,6 @@ from amaranth.sim import *
 
 path = Path()
 sim = Simulator(path)
-
-def incr():
-	yield path.i_incr.eq(1)
 
 def data():
 	with open("input") as f:
@@ -53,7 +48,6 @@ def data():
 		forward = yield path.o_forward
 		print("{}".format(depth * forward))
 
-sim.add_sync_process(incr)
 sim.add_sync_process(data)
 sim.add_clock(1e-9)
 with sim.write_vcd("day02.vcd", "day02.gtkw"):
